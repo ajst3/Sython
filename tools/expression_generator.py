@@ -60,3 +60,4 @@ class ExpGen(object):
 if __name__ == "__main__":
     gen = ExpGen(sys.argv[1].strip('"'))
     gen.designAst()
+    gen.tear_down()
