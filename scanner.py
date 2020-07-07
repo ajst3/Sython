@@ -164,7 +164,7 @@ class Scanner(object):
             self._addToken(type)
         elif c == "#":
             # advance to next line
-            while not self._peek() != '\n' and not self._atEnd():
+            while self._peek() != '\n' and not self._atEnd():
                 self._advance()
         elif self._isWhitespace(c):
             if c == '\n':
