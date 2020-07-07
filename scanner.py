@@ -1,7 +1,6 @@
 """
 Classes for scanning and lexer error reporting.
 """
-from enum import Enum
 
 class Scanner(object):
     """ Class for scanner used by the lexer to form tokens and such. """
@@ -22,6 +21,7 @@ class Scanner(object):
             self.start = self.current
             self._scanToken()
 
+        self.tokenList.append(Token("EOF", "", None, self.line))
         return self.tokenList
 
     def _atEnd(self):
@@ -135,6 +135,9 @@ class Scanner(object):
         elif c == "*":
             type = TokenType("STAR")
             self._addToken(type)
+        elif c == ";":
+            type = TokenType("SEMICOLON")
+            self._addToken(type)
         elif c == '!':
             if self._match('='):
                 type = TokenType("BANG_EQUAL")
@@ -202,7 +205,8 @@ class TokenType(object):
           "LESS", "LESS_EQUAL",
           "IDENTIFIER", "STRING", "NUMBER",
           "AND", "CLASS", "ELSE", "FALSE", "DEF", "FOR", "IF", "NIL", "OR",
-          "RETURN", "SUPER", "THIS", "TRUE", "WHILE", "NUM", "STR", "BOOLEAN"
+          "RETURN", "SUPER", "THIS", "TRUE", "WHILE", "NUM", "STR", "BOOLEAN",
+          "EOF"
           ]
         self.name = type
 
