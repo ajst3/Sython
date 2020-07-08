@@ -36,3 +36,10 @@ class Unary(Expression):
 	def accept(self, visitor):
 		return visitor.visitUnary(self)
 
+class Variable(Expression):
+	def __init__(self, name):
+		self.name = name
+
+	def accept(self, visitor):
+		return visitor.visitVariable(self)
+
