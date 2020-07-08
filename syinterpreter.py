@@ -5,16 +5,41 @@ Note: To convert to static type think about adding a field to the expression
 """
 import exceptions
 from error_reporting import Error
+from environment import Environment
 
 class Interpreter(object):
 
-    def interpret(self, expr):
+    def __init__(self):
+        self.environment = Environment()
+
+    def interpret(self, statements):
         try:
-            val = self._evaluate(expr)
-            print(">>> " + self._stringify(val))
+            for statement in statements:
+                self.execute(statement)
         except exceptions.RuntimeException as eee:
             Error().runtimeError(eee)
 
+    def execute(self, stmt):
+        stmt.accept(self)
+
+    def visitVar(self, stmt):
+        value = None
+        if stmt.initializer is not None:
+            value = self._evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
+        return None
+
+    def visitVariable(self, expr):
+        return self.environment.get(expr.name)
+
+    def visitExpression(self, stmt):
+        self._evaluate(stmt.expression)
+
+    def visitPrint(self, stmt):
+        value = self._evaluate(stmt.expression)
+        print(self._stringify(value))
+
+    # Functions for visiting expressions
     def visitLiteral(self, expr):
         # Pull value out of the tree node
         return expr.val
@@ -113,12 +138,12 @@ class Interpreter(object):
     def _stringify(self, x):
         if x == None:
             return "nil"
-        if x == True:
-            return "true"
-        if x == False:
-            return "false"
         if isinstance(x, float):
             text = str(x)
             if text[len(text)-2: len(text)] == ".0":
                 return text[0:len(text)-2]
+        if x == True:
+            return "true"
+        if x == False:
+            return "false"
         return str(x)  # rely on object __str__ method

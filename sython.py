@@ -1,6 +1,7 @@
 """
 Main program to execute Sython code.
 """
+import sys
 from lexer import Lexer
 from syinterpreter import Interpreter
 from syparser import Parser
@@ -19,19 +20,33 @@ class Sython(object):
             # for token in tokens:
             #     print(str(token))
             par = Parser(tokens)
-            exp_tree = par.parse()
-            if not exp_tree:
+            statements = par.parse()
+            if not isinstance(statements, list):
+                statements = [statements]
+            self.interpreter.interpret(statements)
+        else:
+            self.lex.execute()
+            # for token in self.lex.tokens:
+            #     print(str(token))
+            par = Parser(self.lex.tokens)
+            statements = par.parse()
+            if not statements:
                 return
-            # printer = Printer()
-            # print(printer.printExp(exp_tree))
-            self.interpreter.interpret(exp_tree)
+            if not isinstance(statements, list):
+                statements = [statements]
+            self.interpreter.interpret(statements)
 
 if __name__ == "__main__":
-    sy = Sython()
-    author_info = (" Welcome to the Sython shell, where you can script in "
-    "Sython. Authored by Austin Tercha")
-    print(author_info)
-    uinput = input(">>> ")
-    while uinput != "quit":
+    if len(sys.argv) > 1:
+        sy = Sython(sys.argv[1])
+        sy.execute()
+    else:
+        sy = Sython()
+        author_info = (" Welcome to the Sython shell, where you can script in "
+        "Sython. Authored by Austin Tercha")
+        print(author_info)
         uinput = input(">>> ")
         sy.execute(uinput)
+        while uinput != "quit":
+            uinput = input(">>> ")
+            sy.execute(uinput)

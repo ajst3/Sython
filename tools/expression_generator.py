@@ -6,18 +6,25 @@ import sys
 
 class ExpGen(object):
 
-    def __init__(self, outputdir):
+    def __init__(self, outputdir, filename, basename):
         self.outputdir = outputdir
-        self.basename = "expressions"
+        self.basename = basename
+        self.filename = filename
 
         # Maps the fields for the type of expression to the type of expression
         self.exp_map = {
         "Binary": "left, operator, right",
         "Grouping": "expression",
         "Literal": "val",
-        "Unary": "operator, right"
+        "Unary": "operator, right",
+        "Variable": "name"
         }
-        self.path_to_file = ("%s/%s.py" % (self.outputdir, self.basename))
+        self.stmt_map = {
+        "Expression": "expression",
+        "Print": "expression",
+        "Var": "name, initializer"
+        }
+        self.path_to_file = ("%s/%s.py" % (self.outputdir, self.filename))
         self.expfile = open("%s" % self.path_to_file, 'w')
 
     def _setupFile(self):
@@ -27,7 +34,7 @@ class ExpGen(object):
         self.expfile.write(file_preamble)
 
         # Write the base class shared by all
-        base_class = ("class Expression():\n")
+        base_class = ("class %s():\n" % self.basename)
         self.expfile.write(base_class)
 
         # Add abstract method to the base class
@@ -44,12 +51,12 @@ class ExpGen(object):
             self.expfile.write(method_sig)
             self.expfile.write("\t\tpass\n")
 
-    def _addClass(self, classname):
-        class_sign = ("class %s(Expression):\n\t" % classname)
+    def _addClass(self, classname, map):
+        class_sign = ("class %s(%s):\n\t" % (classname, self.basename))
         self.expfile.write(class_sign)
 
         # Add constructor
-        class_params = self.exp_map[classname]
+        class_params = map[classname]
         init = ("def __init__(self, %s):\n" % class_params)
         self.expfile.write(init)
 
@@ -69,18 +76,23 @@ class ExpGen(object):
     def designAst(self):
         # Add the file preamble and the base class
         self._setupFile()
-        #self._addVisitor()
 
         # Add each class to file
-        for classname in self.exp_map:
-            self._addClass(classname)
+        if self.basename == "Expression":
+            map = self.exp_map
+        elif self.basename == "Stmt":
+            map = self.stmt_map
+
+        for classname in map:
+            self._addClass(classname, map)
             self.expfile.write("\n")
+
 
     def tear_down(self):
         self.expfile.close()
 
 
 if __name__ == "__main__":
-    gen = ExpGen(sys.argv[1].strip('"'))
+    gen = ExpGen(sys.argv[1].strip('"'), sys.argv[2], sys.argv[3])
     gen.designAst()
     gen.tear_down()

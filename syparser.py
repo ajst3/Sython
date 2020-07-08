@@ -3,6 +3,7 @@ Class that is used to parse the list of tokens.
 """
 import exceptions
 import expressions as exp
+import stmt
 from error_reporting import Error
 from scanner import Token, TokenType
 
@@ -13,11 +14,47 @@ class Parser(object):
         self.current = 0
 
     def parse(self):
-        """ Parses an expression an returns it."""
+        """ Returns a list of statements."""
         try:
-            return self.expression()
+            statements = []
+            while not self._isAtEnd():
+                statements.append(self.declaration())
+            return statements
         except exceptions.ParserException:
             return None
+
+    def declaration(self):
+        try:
+            # Check if it is a variable declaration
+            if self._match("NUM", "STR", "BOOL"):
+                return self.varDelcaration()
+            return self.statement()
+        except exceptions.ParserException as eee:
+            self.synchronize()
+            return None
+
+    def varDelcaration(self):
+        name = self._consume("IDENTIFIER", "Expected varibale name")
+        initializer = None
+        if self._match("EQUAL"):
+            initializer = self.expression()
+        self._consume("SEMICOLON", "Expected a ; after variable declaration")
+        return stmt.Var(name, initializer)
+
+    def statement(self):
+        if self._match("PRINT"):
+            return self.printStatement()
+        return self.expressionStatement()
+
+    def printStatement(self):
+        value = self.expression()
+        self._consume("SEMICOLON", "Expected ; after value")
+        return stmt.Print(value)
+
+    def expressionStatement(self):
+        expr = self.expression()
+        self._consume("SEMICOLON", "Expected ; after value")
+        return stmt.Expression(expr)
 
     def expression(self):
         return self.equality()
@@ -83,7 +120,9 @@ class Parser(object):
             expr = self.expression()
             self._consume("RIGHT_PAREN", "Expected ')' after expression")
             return exp.Grouping(expr)
-        raise self.error(self._peek(), "Expected expression")
+        if self._match("IDENTIFIER"):
+            return exp.Variable(self._previous())
+        raise self.error(self._peek(), " Expected expression")
 
     def error(self, token, msg):
         Error().error(token, msg)
@@ -96,8 +135,8 @@ class Parser(object):
         while not self._isAtEnd():
             if self._previous().type == "SEMICOLON":
                 return
-            to_return = ["CLASS", "FUN", "VAR", "FOR", "IF", "WHILE",
-            "RETURN"]
+            to_return = ["CLASS", "DEF", "NUM", "FOR", "IF", "WHILE",
+            "RETURN", "BOOL", "STR"]
             if self._peek().type in to_return:
                 return
             self._advance()
@@ -127,7 +166,7 @@ class Parser(object):
         return self._previous()
 
     def _isAtEnd(self):
-        return self._peek() == "EOF"
+        return str(self._peek().type) == "EOF"
 
     def _peek(self):
         return self.tokens[self.current]

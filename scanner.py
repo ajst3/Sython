@@ -13,7 +13,8 @@ class Scanner(object):
         self.tokenList = []
         self.keywords = ['and', 'class', 'else', 'false', 'true', 'for',
                          'def', 'if', 'nil', 'or', 'return',
-                         'super', 'this', 'while', 'num', 'str', 'boolean']
+                         'super', 'this', 'while', 'num', 'str', 'bool',
+                         'print']
 
     def scanTokens(self):
         """ Scans tokens in the source code and returns a list of tokens."""
@@ -203,9 +204,9 @@ class TokenType(object):
           "EQUAL", "EQUAL_EQUAL",
           "GREATER", "GREATER_EQUAL",
           "LESS", "LESS_EQUAL",
-          "IDENTIFIER", "STRING", "NUMBER",
+          "IDENTIFIER", "STRING", "NUMBER", 'PRINT',
           "AND", "CLASS", "ELSE", "FALSE", "DEF", "FOR", "IF", "NIL", "OR",
-          "RETURN", "SUPER", "THIS", "TRUE", "WHILE", "NUM", "STR", "BOOLEAN",
+          "RETURN", "SUPER", "THIS", "TRUE", "WHILE", "NUM", "STR", "BOOL",
           "EOF"
           ]
         self.name = type
