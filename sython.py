@@ -9,6 +9,7 @@ from ast_printer import Printer
 
 class Sython(object):
     def __init__(self, path_to_file=None):
+        """ Define path_to_file if running a script."""
         self.lex = Lexer(path_to_file)
         self.interpreter = Interpreter()
 
@@ -35,6 +36,7 @@ class Sython(object):
             if not isinstance(statements, list):
                 statements = [statements]
             self.interpreter.interpret(statements)
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

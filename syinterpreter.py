@@ -1,7 +1,6 @@
 """
 Class that is used to evaulate expressions by using the visitor pattern.
 Implements the runtime world.
-Note: To convert to static type think about adding a field to the expression
 """
 import exceptions
 from error_reporting import Error
@@ -13,6 +12,13 @@ class Interpreter(object):
         self.environment = Environment()
 
     def interpret(self, statements):
+        """ For each statement given to us by the parser
+        we execute the statement."""
+        # If there is a null reference in statements,
+        # there was a parser error. So dont run anything.
+        if None in statements:
+            return
+
         try:
             for statement in statements:
                 self.execute(statement)
@@ -20,34 +26,69 @@ class Interpreter(object):
             Error().runtimeError(eee)
 
     def execute(self, stmt):
+        """ Begin visitor pattern to evaluate the subexpressions."""
         stmt.accept(self)
 
+    def executeBlock(self, statements, environment):
+        # Save previous env
+        previous_env = self.environment
+
+        try:
+            # Set env for this block
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        except exceptions.RuntimeException as eee:
+            # Reraise as it will be caught in interpret method
+            raise
+        finally:
+            # Restore previous env
+            self.environment = previous_env
+
+    # Functions for visiting statements
     def visitVar(self, stmt):
+        """ Evaluate visitor statement by putting
+        the var name in the dictionary with the evaluated initializer."""
         value = None
         if stmt.initializer is not None:
             value = self._evaluate(stmt.initializer)
-        self.environment.define(stmt.name.lexeme, value)
+        self.environment.define(stmt.name.lexeme, stmt.type, value)
         return None
 
-    def visitVariable(self, expr):
-        return self.environment.get(expr.name)
+    def visitBlock(self, stmt):
+        """ Execute statements in block."""
+        self.executeBlock(stmt.statements, Environment(self.environment))
 
     def visitExpression(self, stmt):
+        """ Return the value of the evaluated expression."""
         self._evaluate(stmt.expression)
 
     def visitPrint(self, stmt):
+        """ Evaluate the expression and print the result."""
         value = self._evaluate(stmt.expression)
         print(self._stringify(value))
 
     # Functions for visiting expressions
+    def visitVariable(self, expr):
+        """ Return the value of the variable the
+        expression is referencing."""
+        return self.environment.get(expr.name)
+
+    def visitAssign(self, expr):
+        value = self._evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
+
     def visitLiteral(self, expr):
         # Pull value out of the tree node
         return expr.val
 
     def visitGrouping(self, expr):
+        """ Evauluate expression in the parens."""
         return self._evaluate(expr.expression)
 
     def visitUnary(self, expr):
+        """ Evaluate the expression on the right of the unary op."""
         right = self._evaluate(expr.right)
 
         if str(expr.operator.type) == "MINUS":
@@ -60,6 +101,8 @@ class Interpreter(object):
         return None
 
     def visitBinary(self, expr):
+        """ Evaluate the expressions on the left and right of
+        the operator, then perform the operation on them."""
         left = self._evaluate(expr.left)
         right = self._evaluate(expr.right)
         op = str(expr.operator.type)
@@ -136,14 +179,16 @@ class Interpreter(object):
         raise exceptions.RuntimeException("Operands must be numbers!", op)
 
     def _stringify(self, x):
-        if x == None:
+        if x is None:
             return "nil"
+        if isinstance(x, int):
+            return x
         if isinstance(x, float):
             text = str(x)
             if text[len(text)-2: len(text)] == ".0":
                 return text[0:len(text)-2]
-        if x == True:
+        if x is True:
             return "true"
-        if x == False:
+        if x is False:
             return "false"
         return str(x)  # rely on object __str__ method

@@ -13,6 +13,7 @@ class ExpGen(object):
 
         # Maps the fields for the type of expression to the type of expression
         self.exp_map = {
+        "Assign": "name, value",
         "Binary": "left, operator, right",
         "Grouping": "expression",
         "Literal": "val",
@@ -20,9 +21,10 @@ class ExpGen(object):
         "Variable": "name"
         }
         self.stmt_map = {
+        "Block": "statements",
         "Expression": "expression",
         "Print": "expression",
-        "Var": "name, initializer"
+        "Var": "name, type, initializer"
         }
         self.path_to_file = ("%s/%s.py" % (self.outputdir, self.filename))
         self.expfile = open("%s" % self.path_to_file, 'w')

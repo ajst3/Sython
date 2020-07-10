@@ -1,5 +1,5 @@
 """
-Class that is used to parse the list of tokens.
+Class that is used to parse the list of tokens. From the precendence
 """
 import exceptions
 import expressions as exp
@@ -34,17 +34,30 @@ class Parser(object):
             return None
 
     def varDelcaration(self):
+        vartype = self._previous()
         name = self._consume("IDENTIFIER", "Expected varibale name")
         initializer = None
         if self._match("EQUAL"):
             initializer = self.expression()
         self._consume("SEMICOLON", "Expected a ; after variable declaration")
-        return stmt.Var(name, initializer)
+        return stmt.Var(name, vartype, initializer)
 
     def statement(self):
         if self._match("PRINT"):
             return self.printStatement()
+
+        if self._match("LEFT_BRACE"):
+            return stmt.Block(self.block())
+
         return self.expressionStatement()
+
+    def block(self):
+        """ Returns a list of statements in the block."""
+        statements = []
+        while not self._check("RIGHT_BRACE") and not self._isAtEnd():
+            statements.append(self.declaration())
+        self._consume("RIGHT_BRACE", "Expected } to end block")
+        return statements
 
     def printStatement(self):
         value = self.expression()
@@ -56,8 +69,21 @@ class Parser(object):
         self._consume("SEMICOLON", "Expected ; after value")
         return stmt.Expression(expr)
 
+    def assignment(self):
+        expr = self.equality()
+
+        if self._match("EQUAL"):
+            eq = self._previous()
+            value = self.assignment()
+
+            if isinstance(expr, exp.Variable):
+                name = expr.name
+                return exp.Assign(name, value)
+            self.error(eq, "Invalid assignment")
+        return expr
+
     def expression(self):
-        return self.equality()
+        return self.assignment()
 
     def equality(self):
         expr = self.comparison()

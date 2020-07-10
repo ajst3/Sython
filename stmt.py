@@ -5,6 +5,13 @@ class Stmt():
 	def accept(self, visitor):
 		pass
 
+class Block(Stmt):
+	def __init__(self, statements):
+		self.statements = statements
+
+	def accept(self, visitor):
+		return visitor.visitBlock(self)
+
 class Expression(Stmt):
 	def __init__(self, expression):
 		self.expression = expression
@@ -20,8 +27,9 @@ class Print(Stmt):
 		return visitor.visitPrint(self)
 
 class Var(Stmt):
-	def __init__(self, name, initializer):
+	def __init__(self, name, type, initializer):
 		self.name = name
+		self.type = type
 		self.initializer = initializer
 
 	def accept(self, visitor):

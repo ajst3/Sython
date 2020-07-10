@@ -14,4 +14,5 @@ class Error(object):
         print("Line %d, %s" % (line, msg))
 
     def runtimeError(self, error):
-        print("\nline [%s]" % error.token.line)
+        print(str(error))
+        # print("\nline [%s]" % error.token.line)

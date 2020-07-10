@@ -9,8 +9,9 @@ class RuntimeException(Exception):
     def __init__(self, msg, token=None):
         Exception.__init__(self, msg)
         self.token = token
+        self.msg = msg
 
     def __str__(self):
         if self.token:
-            return "%d %s" % (self.token.line, self.msg)
+            return "Line %d %s" % (self.token.line, self.msg)
         return self.msg

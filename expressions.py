@@ -5,6 +5,14 @@ class Expression():
 	def accept(self, visitor):
 		pass
 
+class Assign(Expression):
+	def __init__(self, name, value):
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor):
+		return visitor.visitAssign(self)
+
 class Binary(Expression):
 	def __init__(self, left, operator, right):
 		self.left = left
