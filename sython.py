@@ -2,10 +2,10 @@
 Main program to execute Sython code.
 """
 import sys
-from lexer import Lexer
-from syinterpreter import Interpreter
-from syparser import Parser
-from ast_printer import Printer
+from exec.lexer import Lexer
+from exec.syinterpreter import Interpreter
+from exec.syparser import Parser
+from tools.ast_printer import Printer
 
 class Sython(object):
     def __init__(self, path_to_file=None):

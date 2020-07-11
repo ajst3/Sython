@@ -15,12 +15,14 @@ class ExpGen(object):
         self.exp_map = {
         "Assign": "name, value",
         "Binary": "left, operator, right",
+        "Logical": "left, operator, right",
         "Grouping": "expression",
         "Literal": "val",
         "Unary": "operator, right",
         "Variable": "name"
         }
         self.stmt_map = {
+        "If": "condition, then_brach, else_branch",
         "Block": "statements",
         "Expression": "expression",
         "Print": "expression",
