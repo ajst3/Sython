@@ -1,2 +1,2 @@
 @echo off
-python sython.py %1
+python %SYTHON_HOME%/sython.py %1

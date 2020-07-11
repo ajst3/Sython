@@ -5,5 +5,7 @@
 
 # To Run
   Add <dir_containing_sython>/Sython to Path env variable
+  Create a new env variable called SYTHON_HOME and set the
+  value to the same as the path var
   Must have Python3 to run
   sython <script_name>.sy
