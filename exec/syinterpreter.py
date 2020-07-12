@@ -46,6 +46,35 @@ class Interpreter(object):
             self.environment = previous_env
 
     # Functions for visiting statements
+    def visitFor(self, stmt):
+        if stmt.initializer:
+            self.execute(stmt.initializer)
+        while self._isTruthy(self._evaluate(stmt.condition)):
+            self.execute(stmt.body)
+            self.execute(stmt.increment)
+        # TODO: Implement else clause, will need break clause as well
+
+    def visitWhile(self, stmt):
+        while self._isTruthy(self._evaluate(stmt.condition)):
+            self.execute(stmt.body)
+
+    def visitDo(self, stmt):
+        # Execute the block at least once
+        self.execute(stmt.body)
+
+        # If this is a do-while loop
+        if stmt.condition_type == "while":
+            while self._isTruthy(self._evaluate(stmt.condition)):
+                self.execute(stmt.body)
+        # If this is a do-until loop
+        else:
+            while not self._isTruthy(self._evaluate(stmt.condition)):
+                self.execute(stmt.body)
+
+    def visitUntil(self, stmt):
+        while not self._isTruthy(self._evaluate(stmt.condition)):
+            self.execute(stmt.body)
+
     def visitIf(self, stmt):
         if self._isTruthy(self._evaluate(stmt.condition)):
             self.execute(stmt.then_branch)
@@ -87,6 +116,28 @@ class Interpreter(object):
     def visitLiteral(self, expr):
         # Pull value out of the tree node
         return expr.val
+
+    def visitLogical(self, expr):
+        left = self._evaluate(expr.left)
+
+        if str(operator.type) == "OR":
+            if self._isTruthy(left):
+                # We are in an or statement and the left is true
+                # so short circuit
+                return True
+            elif self._isTruthy(self._evaluate(expr.right)):
+                return True
+            else:
+                return False
+        else:
+            if not self._isTruthy(left):
+                # We are in an and statement and the left is false
+                # so we can short circuit
+                return False
+            if self._isTruthy(expr.right):
+                return True
+            else:
+                return False
 
     def visitGrouping(self, expr):
         """ Evauluate expression in the parens."""

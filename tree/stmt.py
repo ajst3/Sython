@@ -6,9 +6,9 @@ class Stmt():
 		pass
 
 class If(Stmt):
-	def __init__(self, condition, then_brach, else_branch):
+	def __init__(self, condition, then_branch, else_branch):
 		self.condition = condition
-		self.then_brach = then_brach
+		self.then_branch = then_branch
 		self.else_branch = else_branch
 
 	def accept(self, visitor):
@@ -43,4 +43,40 @@ class Var(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visitVar(self)
+
+class While(Stmt):
+	def __init__(self, condition, body):
+		self.condition = condition
+		self.body = body
+
+	def accept(self, visitor):
+		return visitor.visitWhile(self)
+
+class For(Stmt):
+	def __init__(self, initializer, condition, body, increment, else_branch):
+		self.initializer = initializer
+		self.condition = condition
+		self.body = body
+		self.increment = increment
+		self.else_branch = else_branch
+
+	def accept(self, visitor):
+		return visitor.visitFor(self)
+
+class Do(Stmt):
+	def __init__(self, condition, body, condition_type):
+		self.condition = condition
+		self.body = body
+		self.condition_type = condition_type
+
+	def accept(self, visitor):
+		return visitor.visitDo(self)
+
+class Until(Stmt):
+	def __init__(self, condition, body):
+		self.condition = condition
+		self.body = body
+
+	def accept(self, visitor):
+		return visitor.visitUntil(self)
 

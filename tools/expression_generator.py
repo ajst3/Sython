@@ -22,11 +22,15 @@ class ExpGen(object):
         "Variable": "name"
         }
         self.stmt_map = {
-        "If": "condition, then_brach, else_branch",
+        "If": "condition, then_branch, else_branch",
         "Block": "statements",
         "Expression": "expression",
         "Print": "expression",
-        "Var": "name, type, initializer"
+        "Var": "name, type, initializer",
+        "While": "condition, body",
+        "For": "initializer, condition, body, increment, else_branch",
+        "Do": "condition, body, condition_type",
+        "Until": "condition, body"
         }
         self.path_to_file = ("%s/%s.py" % (self.outputdir, self.filename))
         self.expfile = open("%s" % self.path_to_file, 'w')

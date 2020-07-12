@@ -13,8 +13,8 @@ class Scanner(object):
         self.tokenList = []
         self.keywords = ['and', 'class', 'else', 'false', 'true', 'for',
                          'def', 'if', 'nil', 'or', 'return',
-                         'super', 'this', 'while', 'num', 'str', 'bool',
-                         'print']
+                         'super', 'self', 'while', 'num', 'str', 'bool',
+                         'print', 'do', "until"]
 
     def scanTokens(self):
         """ Scans tokens in the source code and returns a list of tokens."""

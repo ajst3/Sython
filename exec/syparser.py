@@ -49,6 +49,18 @@ class Parser(object):
         if self._match("PRINT"):
             return self.printStatement()
 
+        if self._match("WHILE"):
+            return self.whilestatement()
+
+        if self._match("DO"):
+            return self.dostatement()
+
+        if self._match("UNTIL"):
+            return self.untilstatement()
+
+        if self._match("FOR"):
+            return self.forstatement()
+
         if self._match("LEFT_BRACE"):
             return stmt.Block(self.block())
 
@@ -64,7 +76,75 @@ class Parser(object):
         if self._match("ELSE"):
             else_branch = self.statement()
 
-        return stmt.If(condition, then_brach, else_branch)
+        return stmt.If(condition, then_branch, else_branch)
+
+    def forstatement(self):
+        self._consume("LEFT_PAREN", "Expected left paren after for")
+
+        # Get the initializer
+        if self._match("SEMICOLON"):  # No initializer
+            initializer = None
+        else:  # initializer is an assignment
+            initializer = self.expressionStatement()
+
+        # Get condition
+        if self._check("SEMICOLON"):
+            condition = None
+        else:
+            condition = self.expression()
+        self._consume("SEMICOLON", "Expected semicolon after condition")
+
+        # Get increment
+        if self._check("RIGHT_PAREN"):
+            increment = None
+        else:
+            increment = self.expression()
+
+        self._consume("RIGHT_PAREN", "Expected ')' after clauses")
+
+        body = self.statement()
+
+        # Get else branch, which executes if the loop does not complete
+        if self._match("ELSE"):
+            else_branch = self.statement()
+        else:
+            else_branch = None
+        return stmt.For(initializer, condition, body,increment, else_branch)
+
+    def whilestatement(self):
+        self._consume("LEFT_PAREN", "Expected left paren after while")
+        condition = self.expression()
+        self._consume("RIGHT_PAREN", "Expected right paren after condition")
+
+        body = self.statement()
+        return stmt.While(condition, body)
+
+    def untilstatement(self):
+        self._consume("LEFT_PAREN", "Expected left paren after until")
+        condition = self.expression()
+        self._consume("RIGHT_PAREN", "Expected right paren after until")
+
+        body = self.statement()
+        return stmt.Until(condition, body)
+
+    def dostatement(self):
+        # This is the block immediately following the do statement
+        body = self.statement()
+
+        # Get condition
+        er = self._consume("WHILE", "Expected while after do block", True)
+        et = self._consume("UNTIL", "Expected while after do block", True)
+        if not er and not et:
+            raise self.error(self._peek(),
+                             "Expected while or until after do block")
+
+        self._consume("LEFT_PAREN", "Expected left paren after while/until")
+        condition = self.expression()
+        self._consume("RIGHT_PAREN", "Expected right paren after condition")
+        if er:
+            return stmt.Do(condition, body, "while")
+        else:
+            return stmt.Do(condition, body, "until")
 
     def block(self):
         """ Returns a list of statements in the block."""
@@ -85,7 +165,7 @@ class Parser(object):
         return stmt.Expression(expr)
 
     def assignment(self):
-        expr = self.equality()
+        expr = self.ore()
 
         if self._match("EQUAL"):
             eq = self._previous()
@@ -99,6 +179,22 @@ class Parser(object):
 
     def expression(self):
         return self.assignment()
+
+    def ore(self):
+        expr = self.andd()
+        while self._match("OR"):
+            op = self._previous()
+            right = self.andd()
+            expr = exp.Logical(expr, op, right)
+        return expr
+
+    def andd(self):
+        expr = self.equality()
+        while self._match("AND"):
+            op = self._previous()
+            right = self.equality()
+            expr = exp.Logical(expr, op, right)
+        return expr
 
     def equality(self):
         expr = self.comparison()
@@ -182,10 +278,11 @@ class Parser(object):
                 return
             self._advance()
 
-    def _consume(self, type, msg):
+    def _consume(self, type, msg, silent=False):
         if self._check(type):
             return self._advance()
-        raise self.error(self._peek(), msg)
+        if not silent:
+            raise self.error(self._peek(), msg)
 
     def _match(self, *types):
         """ Iterates through tokens and determines if they
