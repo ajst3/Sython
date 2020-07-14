@@ -33,7 +33,8 @@ class ExpGen(object):
         "Do": "condition, body, condition_type",
         "Until": "condition, body",
         "Break": "x",
-        "Continue": "x"
+        "Continue": "x",
+        "Pass": "x"
         }
         self.path_to_file = ("%s/%s.py" % (self.outputdir, self.filename))
         self.expfile = open("%s" % self.path_to_file, 'w')

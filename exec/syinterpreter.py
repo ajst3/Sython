@@ -58,6 +58,9 @@ class Interpreter(object):
     def visitContinue(self, stmt):
         self.continueing = True
 
+    def visitPass(self, stmt):
+        pass
+
     def visitFor(self, stmt):
         if stmt.initializer:
             self.execute(stmt.initializer)
@@ -112,7 +115,7 @@ class Interpreter(object):
                     break
             else:
                 if stmt.else_branch is not None:
-                    self.execute(stmt.else_branch)            
+                    self.execute(stmt.else_branch)
 
     def visitVar(self, stmt):
         """ Evaluate visitor statement by putting

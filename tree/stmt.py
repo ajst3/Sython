@@ -95,3 +95,10 @@ class Continue(Stmt):
 	def accept(self, visitor):
 		return visitor.visitContinue(self)
 
+class Pass(Stmt):
+	def __init__(self, x):
+		self.x = x
+
+	def accept(self, visitor):
+		return visitor.visitPass(self)
+

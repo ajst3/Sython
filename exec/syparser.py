@@ -44,8 +44,15 @@ class Parser(object):
         return stmt.Var(name, vartype, initializer)
 
     def statement(self):
+        if self._match("PASS"):
+            return self.passstatement()
+
         if self._match("IF"):
             return self.ifstatement()
+
+        if self._match("ELSEIF"):
+            raise self.error(self.tokens[self.current],
+                             "elseif much be mapped to an if")
 
         if self._match("PRINT"):
             return self.printStatement()
@@ -80,13 +87,13 @@ class Parser(object):
         if self._match("BREAK"):
             if not self.inloop:
                 raise self.error(self.tokens[self.current],
-                                "Break statement must be inside a loop")
+                                 "Break statement must be inside a loop")
             return self.breakstatement()
 
         if self._match("CONTINUE"):
             if not self.inloop:
                 raise self.error(self.tokens[self.current],
-                                "Continue statement must be inside a loop")
+                                 "Continue statement must be inside a loop")
             return self.continuestatement()
 
         return self.expressionStatement()
@@ -125,6 +132,10 @@ class Parser(object):
     def continuestatement(self):
         self._consume("SEMICOLON", "Expected ; after continue")
         return stmt.Continue(None)
+
+    def passstatement(self):
+        self._consume("SEMICOLON", "Expected ; after pass")
+        return stmt.Pass(None)
 
     def forstatement(self):
         self._consume("LEFT_PAREN", "Expected left paren after for")
