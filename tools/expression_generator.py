@@ -23,7 +23,7 @@ class ExpGen(object):
         "Variable": "name"
         }
         self.stmt_map = {
-        "If": "condition, then_branch, else_branch",
+        "If": "condition, then_branch, elseifs, else_branch",
         "Block": "statements",
         "Expression": "expression",
         "Print": "expression",

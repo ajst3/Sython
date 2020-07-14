@@ -103,8 +103,16 @@ class Interpreter(object):
     def visitIf(self, stmt):
         if self._isTruthy(self._evaluate(stmt.condition)):
             self.execute(stmt.then_branch)
-        elif stmt.else_branch is not None:
-            self.execute(stmt.else_branch)
+        else:
+            # Execute elseif branches if there are any
+            for elseif in stmt.elseifs:
+                if self._isTruthy(self._evaluate(elseif.condition)):
+                    self.execute(elseif.then_branch)
+                    # Break so we dont execute any other elseif block
+                    break
+            else:
+                if stmt.else_branch is not None:
+                    self.execute(stmt.else_branch)            
 
     def visitVar(self, stmt):
         """ Evaluate visitor statement by putting
@@ -145,7 +153,7 @@ class Interpreter(object):
     def visitLogical(self, expr):
         left = self._evaluate(expr.left)
 
-        if str(operator.type) == "OR":
+        if str(expr.operator.type) == "OR":
             if self._isTruthy(left):
                 # We are in an or statement and the left is true
                 # so short circuit
@@ -159,7 +167,7 @@ class Interpreter(object):
                 # We are in an and statement and the left is false
                 # so we can short circuit
                 return False
-            if self._isTruthy(expr.right):
+            if self._isTruthy(self._evaluate(expr.right)):
                 return True
             else:
                 return False

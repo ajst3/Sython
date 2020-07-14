@@ -92,16 +92,31 @@ class Parser(object):
         return self.expressionStatement()
 
     def ifstatement(self):
-        self._consume("LEFT_PAREN", "Expected left paren after if")
+        # Get condition
+        self._consume("LEFT_PAREN", "Expected ( after if")
         condition = self.expression()
-        self._consume("RIGHT_PAREN", "Expected righ paren after condition")
+        self._consume("RIGHT_PAREN", "Expected ) after condition")
 
+        # Get then branch
         then_branch = self.statement()
+
+        # Get elseif branches if there are any
+        # elseif branches will be represents as a list
+        # of if statements
+        elseifs = []
+        while(self._match("ELSEIF")):
+            self._consume("LEFT_PAREN", "Expected ( after elseif")
+            econdition = self.expression()
+            self._consume("RIGHT_PAREN", "Expected ) after condtion")
+            elseif_body = self.statement()
+            elseifs.append(stmt.If(econdition, elseif_body, [], None))
+
+
         else_branch = None
         if self._match("ELSE"):
             else_branch = self.statement()
 
-        return stmt.If(condition, then_branch, else_branch)
+        return stmt.If(condition, then_branch, elseifs, else_branch)
 
     def breakstatement(self):
         self._consume("SEMICOLON", "Expected ; after break")

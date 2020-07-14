@@ -6,9 +6,10 @@ class Stmt():
 		pass
 
 class If(Stmt):
-	def __init__(self, condition, then_branch, else_branch):
+	def __init__(self, condition, then_branch, elseifs, else_branch):
 		self.condition = condition
 		self.then_branch = then_branch
+		self.elseifs = elseifs
 		self.else_branch = else_branch
 
 	def accept(self, visitor):
@@ -93,3 +94,4 @@ class Continue(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visitContinue(self)
+
