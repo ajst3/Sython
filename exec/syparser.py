@@ -17,6 +17,7 @@ class Parser(object):
         """ Returns a list of statements."""
         try:
             statements = []
+            self.inloop = 0
             while not self._isAtEnd():
                 statements.append(self.declaration())
             return statements
@@ -50,19 +51,43 @@ class Parser(object):
             return self.printStatement()
 
         if self._match("WHILE"):
-            return self.whilestatement()
+            self.inloop += 1
+            temp = self.whilestatement()
+            self.inloop -= 1
+            return temp
 
         if self._match("DO"):
-            return self.dostatement()
+            self.inloop += 1
+            temp  = self.dostatement()
+            self.inloop -= 1
+            return temp
 
         if self._match("UNTIL"):
-            return self.untilstatement()
+            self.inloop += 1
+            temp = self.untilstatement()
+            self.inloop -= 1
+            return temp
 
         if self._match("FOR"):
-            return self.forstatement()
+            self.inloop += 1
+            temp = self.forstatement()
+            self.inloop -= 1
+            return temp
 
         if self._match("LEFT_BRACE"):
             return stmt.Block(self.block())
+
+        if self._match("BREAK"):
+            if not self.inloop:
+                raise self.error(self.tokens[self.current],
+                                "Break statement must be inside a loop")
+            return self.breakstatement()
+
+        if self._match("CONTINUE"):
+            if not self.inloop:
+                raise self.error(self.tokens[self.current],
+                                "Continue statement must be inside a loop")
+            return self.continuestatement()
 
         return self.expressionStatement()
 
@@ -77,6 +102,14 @@ class Parser(object):
             else_branch = self.statement()
 
         return stmt.If(condition, then_branch, else_branch)
+
+    def breakstatement(self):
+        self._consume("SEMICOLON", "Expected ; after break")
+        return stmt.Break(None)
+
+    def continuestatement(self):
+        self._consume("SEMICOLON", "Expected ; after continue")
+        return stmt.Continue(None)
 
     def forstatement(self):
         self._consume("LEFT_PAREN", "Expected left paren after for")

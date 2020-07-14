@@ -80,3 +80,16 @@ class Until(Stmt):
 	def accept(self, visitor):
 		return visitor.visitUntil(self)
 
+class Break(Stmt):
+	def __init__(self, x):
+		self.x = x
+
+	def accept(self, visitor):
+		return visitor.visitBreak(self)
+
+class Continue(Stmt):
+	def __init__(self, x):
+		self.x = x
+
+	def accept(self, visitor):
+		return visitor.visitContinue(self)

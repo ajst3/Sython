@@ -10,6 +10,8 @@ class Interpreter(object):
 
     def __init__(self):
         self.environment = Environment()
+        self.breaking = False
+        self.continueing = False
 
     def interpret(self, statements):
         """ For each statement given to us by the parser
@@ -37,6 +39,10 @@ class Interpreter(object):
             # Set env for this block
             self.environment = environment
             for statement in statements:
+                if self.breaking:
+                    break
+                if self.continueing:
+                    break
                 self.execute(statement)
         except exceptions.RuntimeException as eee:
             # Reraise as it will be caught in interpret method
@@ -46,17 +52,29 @@ class Interpreter(object):
             self.environment = previous_env
 
     # Functions for visiting statements
+    def visitBreak(self, stmt):
+        self.breaking = True
+
+    def visitContinue(self, stmt):
+        self.continueing = True
+
     def visitFor(self, stmt):
         if stmt.initializer:
             self.execute(stmt.initializer)
-        while self._isTruthy(self._evaluate(stmt.condition)):
+        while self._isTruthy(self._evaluate(stmt.condition))\
+                and not self.breaking:
             self.execute(stmt.body)
             self.execute(stmt.increment)
+        self.breaking = False
+        self.continueing = False
         # TODO: Implement else clause, will need break clause as well
 
     def visitWhile(self, stmt):
-        while self._isTruthy(self._evaluate(stmt.condition)):
+        while self._isTruthy(self._evaluate(stmt.condition)) \
+                and not self.breaking:
             self.execute(stmt.body)
+            self.continueing = False
+        self.breaking = False
 
     def visitDo(self, stmt):
         # Execute the block at least once
@@ -64,16 +82,23 @@ class Interpreter(object):
 
         # If this is a do-while loop
         if stmt.condition_type == "while":
-            while self._isTruthy(self._evaluate(stmt.condition)):
+            while self._isTruthy(self._evaluate(stmt.condition)) \
+                    and not self.breaking:
                 self.execute(stmt.body)
         # If this is a do-until loop
         else:
-            while not self._isTruthy(self._evaluate(stmt.condition)):
+            while not self._isTruthy(self._evaluate(stmt.condition)) \
+                    and not self.breaking:
                 self.execute(stmt.body)
+        self.breaking = False
+        self.continueing = False
 
     def visitUntil(self, stmt):
-        while not self._isTruthy(self._evaluate(stmt.condition)):
+        while not self._isTruthy(self._evaluate(stmt.condition)) \
+                and not self.breaking:
             self.execute(stmt.body)
+        self.breaking = False
+        self.continueing = False
 
     def visitIf(self, stmt):
         if self._isTruthy(self._evaluate(stmt.condition)):

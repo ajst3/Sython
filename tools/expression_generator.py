@@ -19,6 +19,7 @@ class ExpGen(object):
         "Grouping": "expression",
         "Literal": "val",
         "Unary": "operator, right",
+        "Call": "callee, paren, arguments",
         "Variable": "name"
         }
         self.stmt_map = {
@@ -30,7 +31,9 @@ class ExpGen(object):
         "While": "condition, body",
         "For": "initializer, condition, body, increment, else_branch",
         "Do": "condition, body, condition_type",
-        "Until": "condition, body"
+        "Until": "condition, body",
+        "Break": "x",
+        "Continue": "x"
         }
         self.path_to_file = ("%s/%s.py" % (self.outputdir, self.filename))
         self.expfile = open("%s" % self.path_to_file, 'w')
